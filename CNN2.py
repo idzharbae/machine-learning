@@ -1,10 +1,10 @@
 from __future__ import print_function
 import keras
-from keras import regularizers
+from keras import regularizers, optimizers
 from keras.datasets import cifar10
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Dense, Dropout, Activation, Flatten, BatchNormalization
 from keras.layers import Conv2D, MaxPooling2D
 import os
 import numpy as np
@@ -124,25 +124,11 @@ model.add(BatchNormalization())
 model.add(Dropout(0.25))
 model.add(MaxPooling2D(pool_size=(2,2)))
 
-model.add(Conv2D(512, kernel_size=3, activation='relu', padding='same',
-    kernel_regularizer=regularizers.l2(0.0005)))
-model.add(BatchNormalization())
-model.add(Dropout(0.25))
-model.add(Conv2D(512, kernel_size=3, activation='relu', padding='same',
-    kernel_regularizer=regularizers.l2(0.0005)))
-model.add(BatchNormalization())
-model.add(Dropout(0.25))
-model.add(Conv2D(512, kernel_size=3, activation='relu', padding='same',
-    kernel_regularizer=regularizers.l2(0.0005)))
-model.add(BatchNormalization())
-model.add(Dropout(0.25))
-model.add(MaxPooling2D(pool_size=(2,2)))
-
 model.add(Flatten()) # Menghubungkan layer conv dengan layer dense, konversi matriks ke vektor kolom
 
 # Classifier layer
 
-model.add(Dense(512,kernel_regularizer=regularizers.l2(0.0005))) # Hidden layer
+model.add(Dense(4096,kernel_regularizer=regularizers.l2(0.0005))) # Hidden layer
 model.add(Activation('relu'))
 model.add(BatchNormalization())
 model.add(Dropout(0.5))
