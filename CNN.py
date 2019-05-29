@@ -11,9 +11,7 @@ import cv2
 
 batch_size = 32 # Jumlah data per iterasi
 num_classes = 6 # Jumlah kelas
-epochs = 50
-# data_augmentation = True
-# num_predictions = 20
+epochs = 25
 save_dir = os.path.join(os.getcwd(), 'saved_models')
 model_name = 'keras_cifar10_trained_model.h5'
 
@@ -60,16 +58,27 @@ y_test = keras.utils.to_categorical(y_test, num_classes)
 # referensi : https://towardsdatascience.com/building-a-convolutional-neural-network-cnn-in-keras-329fbbadc5f5
 
 model = Sequential()
-model.add(Conv2D(64, kernel_size=3, activation='relu', input_shape=(32,32,3)))
+
+# Convolutional layer
+
+model.add(Conv2D(32, kernel_size=3, activation='relu', input_shape=(32,32,3), padding='same'))
 model.add(Conv2D(32, kernel_size=3, activation='relu')) # Layer convolution
+model.add(MaxPooling2D(pool_size=(2,2))) # Layer pooling, untuk downsampling : menurunkan dimensi dan supress noise
+model.add(Dropout(0.25)) # Dropout mencegah overfit
+
+model.add(Conv2D(64, kernel_size=3, activation='relu', padding='same'))
+model.add(Conv2D(64, kernel_size=3, activation='relu')) # Layer convolution
 model.add(MaxPooling2D(pool_size=(2,2))) # Layer pooling, untuk downsampling : menurunkan dimensi dan supress noise
 model.add(Dropout(0.25)) 
 
 model.add(Flatten()) # Menghubungkan layer conv dengan layer dense, konversi matriks ke vektor kolom
-model.add(Dense(512))
+
+# Classifier layer
+
+model.add(Dense(512)) # Hidden layer
 model.add(Activation('relu'))
 model.add(Dropout(0.5))
-model.add(Dense(num_classes))
+model.add(Dense(num_classes)) # Output layer
 model.add(Activation('softmax'))
 
 # initiate RMSprop optimizer
@@ -81,11 +90,24 @@ model.compile(loss='categorical_crossentropy',
               optimizer=opt,
               metrics=['accuracy'])
 
-model.fit(x_train, y_train,
-          batch_size=batch_size,
-          epochs=epochs,
-          validation_data=(x_test, y_test),
-          shuffle=True)
+# Augmentasi data untuk memperbanyak sample dengan melakukan modifikasi kepada gambar yang sudah ada
+datagen = ImageDataGenerator(
+        # Secara acak menggeser gambar secara horizontal (fraction of total width)
+        width_shift_range=0.1,
+        # Secara acak menggeser gambar secara vertikal (fraction of total height)
+        height_shift_range=0.1,
+        horizontal_flip=True,  # Secara acak membalik gambar
+        vertical_flip=True,  # Secara acak membalik gambar (vertikal)
+        )
+
+# Aplikasikan augmentasi ke training data
+datagen.fit(x_train)
+# Mulai pembelajaran
+model.fit_generator(datagen.flow(x_train, y_train,
+                    batch_size=batch_size),
+                    epochs=epochs,
+                    validation_data=(x_test, y_test),
+                    workers=4)
 
 # Save model and weights
 if not os.path.isdir(save_dir):
