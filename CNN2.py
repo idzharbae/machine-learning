@@ -58,6 +58,7 @@ y_test = keras.utils.to_categorical(y_test, num_classes)
 
 # Membangun model
 # referensi : https://towardsdatascience.com/building-a-convolutional-neural-network-cnn-in-keras-329fbbadc5f5
+# https://medium.com/@sidereal/cnns-architectures-lenet-alexnet-vgg-googlenet-resnet-and-more-666091488df5
 
 model = Sequential()
 

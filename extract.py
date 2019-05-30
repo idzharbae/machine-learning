@@ -57,7 +57,8 @@ y_test = keras.utils.to_categorical(y_test, num_classes)
 # Membangun model
 # referensi : https://towardsdatascience.com/building-a-convolutional-neural-network-cnn-in-keras-329fbbadc5f5
 # https://medium.com/@sidereal/cnns-architectures-lenet-alexnet-vgg-googlenet-resnet-and-more-666091488df5
-# VGG Net
+# VGG net
+
 model = Sequential()
 
 # Convolutional layer
@@ -74,50 +75,16 @@ model.add(Dropout(0.25))
 
 model.add(Flatten()) # Menghubungkan layer conv dengan layer dense, konversi matriks ke vektor kolom
 
-# Classifier layer
 
-model.add(Dense(512)) # Hidden layer
-model.add(Activation('relu'))
-model.add(Dropout(0.5))
-model.add(Dense(num_classes)) # Output layer
-model.add(Activation('softmax'))
 
-# initiate RMSprop optimizer
-opt = keras.optimizers.rmsprop(lr=0.0001, decay=1e-6)
-# opt = 'adam'
+img_data = x_train[0]
+cv2.imshow('Image',img_data)
+cv2.waitKey(0)
+img_data = np.expand_dims(img_data, axis=0)
+vgg_feature = model.predict(img_data)
 
-# Train model
-model.compile(loss='categorical_crossentropy',
-              optimizer=opt,
-              metrics=['accuracy'])
+# dimensi feature
+print(vgg_feature.shape)
 
-# Augmentasi data untuk memperbanyak sample dengan melakukan modifikasi kepada gambar yang sudah ada
-datagen = ImageDataGenerator(
-        # Secara acak menggeser gambar secara horizontal (fraction of total width)
-        width_shift_range=0.1,
-        # Secara acak menggeser gambar secara vertikal (fraction of total height)
-        height_shift_range=0.1,
-        horizontal_flip=True,  # Secara acak membalik gambar
-        vertical_flip=True,  # Secara acak membalik gambar (vertikal)
-        )
-
-# Aplikasikan augmentasi ke training data
-datagen.fit(x_train)
-# Mulai pembelajaran
-model.fit_generator(datagen.flow(x_train, y_train,
-                    batch_size=batch_size),
-                    epochs=epochs,
-                    validation_data=(x_test, y_test),
-                    workers=4)
-
-# Save model and weights
-if not os.path.isdir(save_dir):
-    os.makedirs(save_dir)
-model_path = os.path.join(save_dir, model_name)
-model.save(model_path)
-print('Saved trained model at %s ' % model_path)
-
-# Score trained model.
-scores = model.evaluate(x_test, y_test, verbose=1)
-print('Test loss:', scores[0])
-print('Test accuracy:', scores[1])
+print('Feature vector : ')
+print(vgg_feature)
